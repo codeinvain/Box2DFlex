@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600" xmlns:b2d="Box2D.flex.b2d.*" preinitialize="application1_initializeHandler(event)" backgroundColor="0xffffff" initialize="asdf(event)"> 
+	<fx:Script>
+		<![CDATA[
+			import Box2D.Collision.Shapes.b2CircleShape;
+			import Box2D.Collision.Shapes.b2Shape;
+			import Box2D.Dynamics.b2FixtureDef;
+			import Box2D.utilities.ComponenetToBodyMap;
+			import Box2D.utilities.WorldDefinition;
+			
+			import flash.sampler.NewObjectSample;
+			
+			import mx.events.FlexEvent;
+			import mx.logging.Log;
+			import mx.logging.LogEventLevel;
+			import mx.skins.Border;
+			import mx.skins.halo.ButtonSkin;
+
+			protected function application1_initializeHandler(event:FlexEvent):void
+			{
+				var logTarget:FirebugTarget = new FirebugTarget();
+				//	            logTarget.filters=["Box2D.*"];
+				            logTarget.level = LogEventLevel.ALL;
+				            logTarget.includeDate = true;
+				            logTarget.includeTime = true;
+				            logTarget.includeCategory = true;
+				            logTarget.includeLevel = true;
+				            Log.addTarget(logTarget);	
+				
+				
+			}
+			
+			protected function asdf(event:FlexEvent):void
+			{
+				/*world.map(ball,new ComponenetToBodyMap(c));
+				*/
+				world.parseCompiseteVisualElement(composite);
+				var fixtureDef:b2FixtureDef = new b2FixtureDef();
+				fixtureDef.density=0.2;
+				fixtureDef.friction=0;
+				fixtureDef.restitution=30
+//				world.map(ball,new ComponenetToBodyMap(null,fixtureDef)); 
+				
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+	</fx:Declarations>
+	
+	<b2d:SkinnablePhysicsContainer  backgroundColor="0x000000" id="world" setBoundries="true" width="400" height="400" x="100" y="100" yGravity="0" debug="true" debugInFront="true">
+		<!--<s:Graphic  id="ball" x="300">
+			<s:Ellipse   width="50" height="50" >
+				<s:fill>
+					<s:SolidColor color="#ff00ff" alpha="0.5"/>
+				</s:fill>
+			</s:Ellipse>
+		</s:Graphic>
+		-->
+		<s:Graphic x="100" y="100" id="composite" >
+			<!--<s:Ellipse width="50" height="50" >
+				<s:fill>
+					<s:SolidColor color="#ff00ff" alpha="1"/>
+				</s:fill>
+			</s:Ellipse>-->
+			<s:Rect width="30" height="30" rotation="30" >
+				<s:fill>
+					<s:SolidColor color="#ffff00" alpha="1"/>
+				</s:fill>
+			</s:Rect>
+			<s:Rect width="30" height="30" rotation="45" x="100" >
+				<s:fill>
+					<s:SolidColor color="#ff0000" alpha="1"/>
+				</s:fill>
+			</s:Rect>
+			<s:Rect width="30" height="30" rotation="90" x="200" >
+				<s:fill>
+					<s:SolidColor color="#0000ff" alpha="1"/>
+				</s:fill>
+			</s:Rect>
+		</s:Graphic>
+		
+	
+	</b2d:SkinnablePhysicsContainer>
+	
+
+</s:Application>

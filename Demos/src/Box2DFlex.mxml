@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="300" minHeight="300" xmlns:b2d="Box2D.flex.b2d.*" preinitialize="application1_initializeHandler(event)" backgroundColor="0x000000" frameRate="30">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.logging.Log;
+			import mx.logging.LogEventLevel;
+
+			protected function application1_initializeHandler(event:FlexEvent):void
+			{
+				var logTarget:FirebugTarget = new FirebugTarget();
+//	            logTarget.filters=["Box2D.*"];
+	            logTarget.level = LogEventLevel.ALL;
+	            logTarget.includeDate = true;
+	            logTarget.includeTime = true;
+	            logTarget.includeCategory = true;
+	            logTarget.includeLevel = true;
+	            Log.addTarget(logTarget);
+			}
+
+
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				btn.width+=10;
+				btn.height+=10;
+			}
+
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+	</fx:Declarations>
+	
+	<s:BorderContainer cornerRadius="5" borderColor="0x222222" backgroundColor="0x222222" x="10" width="180" y="30" height="480" color="white" >
+		<s:layout>
+			<s:VerticalLayout paddingLeft="5" paddingRight="5" 
+							  paddingTop="5" paddingBottom="5"/>
+		</s:layout>
+		
+		<s:Label text="xGravity"/>
+		<s:HSlider id="xGravitySlider" minimum="-10" maximum="10" value="0" width="170"/>
+		<s:Label text="yGravity"/>
+		<s:HSlider id="yGravitySlider" minimum="-10" maximum="10" value="0" width="170"/>
+		<s:ToggleButton id="debugButton" content="Show Debug" color="0x000000"/>
+	</s:BorderContainer>
+	<b2d:SkinnablePhysicsContainer id="physicsContainer" width="640" height="480" backgroundColor="0x222222" x="200" y="30" setBoundries="true" yGravity="{yGravitySlider.value}" xGravity="{xGravitySlider.value}" autoStartPhysicsEngine="true" debug="{debugButton.selected}"  >
+		<s:Label color="white" text="This is a label field"  x="0" y="0" fontSize="32">
+		
+		</s:Label>
+		<s:Button content="Click me to resize ! " x="50" y="50" click="button1_clickHandler(event)" id="btn"/>
+		<mx:Button label="standard MX button" x="100" y="100"/>
+		<s:TextInput text="standard text input you can edit me !" x="300" y="300"/>
+	</b2d:SkinnablePhysicsContainer>
+</s:Application>

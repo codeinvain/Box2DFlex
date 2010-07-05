@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600" backgroundColor="0x1a1a1a" 
+			   xmlns:local="*" initialize="application1_initializeHandler(event)" 
+			   preinitialize="application1_preinitializeHandler(event)"  mouseUp="application1_mouseUpHandler(event)" xmlns:b2d="Box2D.flex.b2d.*">
+	<fx:Script>
+		<![CDATA[
+			import Box2D.Common.Math.b2Vec2;
+			import Box2D.Dynamics.b2Body;
+			import Box2D.Dynamics.b2BodyDef;
+			import Box2D.Dynamics.b2ContactEvent;
+			import Box2D.Dynamics.b2FixtureDef;
+			import Box2D.Dynamics.b2World;
+			import Box2D.utilities.ComponenetToBodyMap;
+			import Box2D.utilities.WorldClock;
+			
+			import mx.charts.HitData;
+			import mx.controls.Alert;
+			import mx.core.SoundAsset;
+			import mx.core.UIComponent;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.events.FlexMouseEvent;
+			import mx.logging.ILogger;
+			import mx.logging.Log;
+			import mx.logging.LogEventLevel;
+			import mx.rpc.soap.LoadEvent;
+			
+			import spark.effects.animation.RepeatBehavior;
+			import spark.layouts.BasicLayout;
+
+			
+			// sounds from http://www.freesound.org/samplesViewSingle.php?id=24726
+			[Embed('assets/hit.mp3')]
+			private var HitSound:Class;
+			// sounds from http://www.freesound.org/samplesViewSingle.php?id=24726
+			[Embed('assets/wall.mp3')]
+			private var WallSound:Class;
+			
+			private var hitSound:SoundAsset;
+			private var wallSound:SoundAsset;
+			private var log:ILogger = Log.getLogger("Box2D.spark.SkinnablePhysicsContainer");
+			
+			private var randDirTimer:Timer;
+			protected function application1_initializeHandler(event:FlexEvent):void
+			{
+				setupSound();
+				setupWorldPhysics();
+				throwBall();	
+				applyGlowFilter();
+				
+				randDirTimer = new Timer(1000,0);
+				randDirTimer.addEventListener(TimerEvent.TIMER,onRandomTimerTick);
+				randDirTimer.start();
+					
+			}
+
+			private function onRandomTimerTick(event:TimerEvent):void
+			{
+				if (Math.random()>0.5){
+					dir = (dir=="up") ? "down"  : "up";
+				}
+			}
+
+			private var dir:String="up";
+			private function onPostStep(event:Event):void
+			{
+				var velocity:Number = 0.25;
+				if (dir=="up")
+				{
+					velocity*=-1;	
+				}
+				var p1b:b2Body = worldUIContainer.getComponentBody(p1);
+				p1b.SetPosition(new b2Vec2(p1b.GetPosition().x,p1b.GetPosition().y+velocity));
+			
+				if (p1.y < 10)
+				{
+					dir="down";
+				}else if (p1.y+p1.height>worldUIContainer.height-10){
+					dir="up";
+				}
+				
+			}
+
+			private function onBodiesContact(e:b2ContactEvent):void
+			{
+				var b1:UIComponent = e.contact.GetFixtureA().GetBody().GetUserData();
+				var b2:UIComponent = e.contact.GetFixtureB().GetBody().GetUserData();
+				if (b1==p1 || b2 ==p1)
+				{
+					hitSound.play();
+				}
+				else if (b1==p2 || b2== p2)
+				{
+					hitSound.play();
+				}
+				else if (b1==p1Goal || b2==p1Goal)
+				{
+					wallSound.play();
+					goalAnimation.play([p1Goal]);
+				}
+				else if (b1==p2Goal || b2==p2Goal)
+				{
+					wallSound.play();
+					goalAnimation.play([p2Goal]);
+				}
+			}
+			protected function applyGlowFilter():void
+			{
+				ball.filters = [glowFilter];
+				p1.filters =[glowFilter];
+				p2.filters = [glowFilter];
+				border.filters =  [glowFilter,glowInner];
+				
+			}
+			
+
+			private function onMouseMove(event:MouseEvent):void
+			{
+				//world.moveBody(p1,event.stageX,event.stageY);
+			}
+			
+			protected function application1_preinitializeHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				var logTarget:FirebugTarget = new FirebugTarget();
+	            logTarget.level = LogEventLevel.ALL;
+	            logTarget.includeDate = true;
+	            logTarget.includeTime = true;
+	            logTarget.includeCategory = true;
+	            logTarget.includeLevel = true;
+	            Log.addTarget(logTarget);	
+			}
+
+
+			private var moveP2:Boolean=false;
+			private var p2StartDelta:Number;
+			protected function p2_mouseDownHandler(event:MouseEvent):void
+			{
+				p2StartDelta = event.stageY  -p2.y;
+				moveP2=true;
+			}
+
+
+			protected function p2_mouseUpHandler(event:MouseEvent):void
+			{
+				moveP2=false;
+			}
+
+
+			protected function world_mouseMoveHandler(event:MouseEvent):void
+			{
+				if (moveP2==false)
+					return;
+				
+				var p2b:b2Body = worldUIContainer.getComponentBody(p2);
+				var nextPos:Number = event.stageY-p2StartDelta;
+				if (nextPos < 10)
+				{
+					nextPos=10;
+				}else if (nextPos+p2.height>worldUIContainer.height-10){
+					nextPos = worldUIContainer.height-10-p2.height;
+				}
+				p2b.SetPosition(new b2Vec2(p2b.GetPosition().x,worldUIContainer.worldDef.meter(nextPos)));
+			}
+
+
+			protected function ball_mouseDownHandler(event:MouseEvent):void
+			{
+				throwBall();	
+			}
+
+
+			protected function application1_mouseUpHandler(event:MouseEvent):void
+			{
+				moveP2=false;
+			}
+
+
+			private function setupSound():void
+			{
+				hitSound = new HitSound();
+				wallSound = new WallSound();
+			}
+
+
+			private function setupWorldPhysics():void
+			{
+				worldUIContainer.parseCompiseteVisualElement(ball);
+				var p1FixD:b2FixtureDef = new b2FixtureDef();
+				p1FixD.friction=0;
+				p1FixD.density=0;
+				//p1FixD.restitution =1; 
+				var staticBody:ComponenetToBodyMap = new ComponenetToBodyMap(null,p1FixD,ComponenetToBodyMap.KINEMATIC_BODY);
+				worldUIContainer.map(p1,staticBody);
+				worldUIContainer.map(p2,staticBody);
+				worldUIContainer.map(p1Goal,staticBody);
+				worldUIContainer.map(p2Goal,staticBody);
+				worldUIContainer.initPhysicsEngine();
+				worldUIContainer.world.addEventListener(b2World.BEGINCONTACT,onBodiesContact);
+				worldUIContainer.world.addEventListener(b2World.POSTSTEP,onPostStep);
+			}
+
+
+			private function throwBall():void
+			{
+				var bBody:b2Body = worldUIContainer.getComponentBody(ball);
+				bBody.ApplyForce(new b2Vec2(-400,100),bBody.GetDefinition().position);
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:GlowFilter id="glowFilter"  alpha="0.5" blurX="20" blurY="20" color="0x99ffcc"  strength="1" inner="false"/>
+		<s:GlowFilter id="glowInner"  alpha="0.5" blurX="30" blurY="30" color="0x99ffcc"  strength="1" inner="true" />
+		<s:GlowFilter id="goalFilter"  alpha="0.5" blurX="20" blurY="20" color="0xffffff"  strength="1" inner="false"/>
+		<s:Animate id="goalAnimation" duration="200" repeatCount="2" repeatBehavior="{RepeatBehavior.REVERSE}">
+			<s:SimpleMotionPath property="backgroundColor" valueTo="0x000000" valueFrom="0xffffff"/>
+			<s:SimpleMotionPath property="borderColor" valueTo="0x000000" valueFrom="0xffffff"/>
+		</s:Animate>
+		
+	</fx:Declarations>
+	 <s:layout>
+		  <s:BasicLayout />
+	 </s:layout>
+	<s:BorderContainer verticalCenter="0" horizontalCenter="0" borderColor="0x99ffcc" width="800" height="400" borderWeight="3"  backgroundColor="0x1a1a1a" cornerRadius="8" id="border" mouseMove="world_mouseMoveHandler(event)" >
+		
+		<b2d:SkinnablePhysicsContainer  width="794" height="394" setBoundries="true"  debugInFront="true" debug="false" id="worldUIContainer" autoStartPhysicsEngine="false"  >
+			
+			<s:BorderContainer id="p1" borderColor="0x99ffcc" width="30" height="80" borderWeight="3"  backgroundColor="0x99ffcc" cornerRadius="3" x="30" y="210"  />	
+			<s:BorderContainer id="p2" borderColor="0x99ffcc" width="30" height="80" borderWeight="3"  backgroundColor="0x99ffcc" cornerRadius="3" x="740" y="210"  mouseDown="p2_mouseDownHandler(event)" mouseUp="p2_mouseUpHandler(event)"  />
+			<s:BorderContainer id="p1Goal" borderColor="0xffffff" width="5" height="300" borderWeight="3"  backgroundColor="0xffffff" cornerRadius="1" x="0" y="50"  filters="{[goalFilter]}" />
+			<s:BorderContainer id="p2Goal" borderColor="0xffffff" width="5" height="300" borderWeight="3"  backgroundColor="0xffffff" cornerRadius="1" x="789" y="50" filters="{[goalFilter]}"  />
+			<s:Graphic y="225" x="375" id="ball"  mouseDown="ball_mouseDownHandler(event)">
+				<s:Ellipse width="30" height="30"  >
+					<s:fill>
+						<s:SolidColor color="0x99ffcc"/>
+					</s:fill>
+				</s:Ellipse>
+			</s:Graphic>
+		</b2d:SkinnablePhysicsContainer>
+	</s:BorderContainer>
+</s:Application>
