@@ -6,6 +6,8 @@
     <classEntry path="Box2D.utilities.MeterDimensions"/>
     <classEntry path="Box2D.utilities.ComponenetToBodyMap"/>
     <classEntry path="Box2D.utilities.Version"/>
+    <classEntry path="Box2D.utilities.EmorphicOutline"/>
+    <classEntry path="Box2D.utilities.ComplexShapeParser"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

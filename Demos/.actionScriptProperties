@@ -15,6 +15,7 @@
   </compiler>
   <applications>
     <application path="SparkGraphics.mxml"/>
+    <application path="OutlineShape.mxml"/>
     <application path="Box2DFlex.mxml"/>
     <application path="Pong2D.mxml"/>
   </applications>

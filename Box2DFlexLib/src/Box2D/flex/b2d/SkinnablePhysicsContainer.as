@@ -3,38 +3,42 @@ package Box2D.flex.b2d
     import Box2D.Collision.Shapes.b2CircleShape;
     import Box2D.Collision.Shapes.b2PolygonShape;
     import Box2D.Collision.Shapes.b2Shape;
-    import Box2D.Common.Math.b2Math;
-    import Box2D.Common.Math.b2Transform;
     import Box2D.Common.Math.b2Vec2;
-    import Box2D.Dynamics.Joints.b2MouseJoint;
-    import Box2D.Dynamics.Joints.b2MouseJointDef;
+    import Box2D.Common.b2Settings;
     import Box2D.Dynamics.b2Body;
     import Box2D.Dynamics.b2BodyDef;
     import Box2D.Dynamics.b2DebugDraw;
     import Box2D.Dynamics.b2FixtureDef;
     import Box2D.Dynamics.b2World;
+    import Box2D.utilities.ComplexShapeParser;
     import Box2D.utilities.ComponenetToBodyMap;
     import Box2D.utilities.MeterDimensions;
+    import Box2D.utilities.Polygon2D;
     import Box2D.utilities.WorldClock;
     import Box2D.utilities.WorldDefinition;
     
+    import flash.display.BitmapData;
     import flash.display.MovieClip;
     import flash.display.Sprite;
-    import flash.events.Event;
+    import flash.geom.ColorTransform;
+    import flash.geom.Point;
     import flash.utils.Dictionary;
     
     import mx.core.IVisualElement;
     import mx.core.UIComponent;
-    import mx.events.CloseEvent;
     import mx.events.ResizeEvent;
     import mx.logging.ILogger;
     import mx.logging.Log;
     
-    import org.osmf.layout.PaddingLayoutFacet;
-    import org.osmf.traits.SwitchableTrait;
+    import net.sakri.flash.bitmap.BitmapDataUtil;
+    import net.sakri.flash.bitmap.BitmapEdgeScanner;
+    import net.sakri.flash.bitmap.BitmapShapeExtractor;
+    import net.sakri.flash.bitmap.ExtractedShapeCollection;
+    import net.sakri.flash.vector.ShapeFidality;
+    import net.sakri.flash.vector.ShapeOptimizer;
+    import net.sakri.flash.vector.VectorShape;
     
     import spark.components.SkinnableContainer;
-    import spark.primitives.Ellipse;
 
 	[Bindable]
     public class SkinnablePhysicsContainer extends SkinnableContainer implements IPhysicsContainer
@@ -45,7 +49,7 @@ package Box2D.flex.b2d
 		private const BOUNDRY_WEIGHT:Number=1/2;
 		
 		private var componentMappings:Dictionary;
-		private var compisiteVisualElements:Array;
+		private var compisiteVisualElements:Dictionary;
 		protected var debugContainer:UIComponent = new UIComponent();
 		
 		private var log:ILogger = Log.getLogger("Box2D.spark.SkinnablePhysicsContainer");
@@ -55,7 +59,7 @@ package Box2D.flex.b2d
             super();
 			componentMappings = new Dictionary();
 			boundries = [];
-			compisiteVisualElements = [];
+			compisiteVisualElements = new Dictionary();
 			xGravity=0;
 			yGravity=0;
 			debug=false;
@@ -69,16 +73,13 @@ package Box2D.flex.b2d
 			componentMappings[element] = mapping;
 		}
 		
-		public function parseCompiseteVisualElement(...args):void
+		public function parseCompiseteVisualElement(element:IVisualElement,parser:ComplexShapeParser=null):void
 		{
-			for (var i:int = 0; i < args.length; i++) 
+			if (parser==null) 
 			{
-				var element:IVisualElement = args[i] as IVisualElement;
-				if (element!=null)
-				{
-					compisiteVisualElements.push(element);		
-				}
+				parser = new ComplexShapeParser();
 			}
+			compisiteVisualElements[element] = parser;		
 		}
 		
 		public function getShapes(element:UIComponent):Vector.<b2Shape>
@@ -243,7 +244,7 @@ package Box2D.flex.b2d
 		private function createBody(actualTarget:UIComponent):b2Body
         {
 			
-			log.debug("createBody" +actualTarget);
+			log.debug("createBody " +actualTarget);
 			var bodyDef:b2BodyDef = new b2BodyDef();
 			actualTarget.addEventListener(ResizeEvent.RESIZE,onUIComponentResize);
 			
@@ -324,34 +325,47 @@ package Box2D.flex.b2d
 			return shapes;
 		}
 		
+		
+		public static const MAX_POINTS:uint=10000;//Failsafe
+		protected function getEdgePointsFromBitmapData(bmd:BitmapData):Vector.<Point>{
+			var first_non_trans:Point=BitmapDataUtil.getFirstNonTransparentPixel(bmd);
+			var points:Vector.<Point>=new Vector.<Point>();
+			if(first_non_trans==null)return points;
+			var scanner:BitmapEdgeScanner=new BitmapEdgeScanner(bmd);
+			scanner.moveTo(first_non_trans);
+			points[0]=first_non_trans;
+			var next:Point;
+			//in the event of a bug (an error, infinite loop) in BitEdgeScanner, which is not perfect,
+			//this loop stops at MAX_POINTS. Increase this number if working with big bitmapdatas. 
+			for(var i:uint=0;i<MAX_POINTS;i++){
+				next=scanner.getNextEdgePoint();
+				if(next.equals(first_non_trans))break;
+				points.push(next);
+				scanner.moveTo(next);
+			}
+			//if(i>=MAX_POINTS)mx.controls.Alert.show("Error : shape scan has more than MAX_POINTS ("+MAX_POINTS+")");
+			return points;
+		}
+		
+		public static function VectorToArray( v:Object ):Array
+		{
+			var vec : Vector.<Object> = Vector.<Object>(v);
+			var arr : Array = new Array()
+			for each( var i : Object in vec ) {
+				arr.push(i);
+			}
+			return arr;
+		}
+		
 		protected function tryParseCompositeVisualElement(element:*,meter:MeterDimensions):Array
 		{
-			var shapes:Array = [];
-			var mappedAsCompositeElement:Boolean = compisiteVisualElements.indexOf(element)>-1;
+			var b2dshapes:Array = [];
+			var mappedAsCompositeElement:Boolean = (compisiteVisualElements[element]!=null);
 			if (mappedAsCompositeElement){
-				for (var i:int = 0; i < element.numElements; i++) 
-				{
-					var comp:* = element.getElementAt(i);
-					if (comp is Ellipse){
-						var circle:b2CircleShape = new  b2CircleShape();
-						circle.SetRadius(_worldDef.meter(comp.width/2));
-						circle.SetLocalPosition(new b2Vec2(worldDef.meter(comp.width/2),worldDef.meter(comp.height/2)));
-						shapes.push(circle);
-					}
-					else
-					{
-						var shape:b2PolygonShape = new b2PolygonShape();
-						var shapeRotation:Number = comp.hasOwnProperty("rotation") ? comp.rotation :0;
-						shape.SetAsOrientedBox(_worldDef.meter(comp.width)/2, _worldDef.meter(comp.height)/2, 
-												new b2Vec2(_worldDef.meter(comp.x+comp.width/2),_worldDef.meter(comp.y+comp.height/2)),
-												0);
-						var t:b2Transform = new b2Transform();
-						
-						shapes.push(shape);
-					}
-				}
+				var shapeParser:ComplexShapeParser = compisiteVisualElements[element];
+				b2dshapes = shapeParser.parse (element,this,worldDef);
 			}
-			return shapes;
+			return b2dshapes;
 		}
 		
 		private var _setBoundriesChanged:Boolean = false;

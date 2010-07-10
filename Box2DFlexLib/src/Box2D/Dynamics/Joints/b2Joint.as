@@ -273,22 +273,22 @@ public class b2Joint
 	// ENUMS
 	
 	// enum b2JointType
-	public static const e_unknownJoint:int = 0;
-	public static const e_revoluteJoint:int = 1;
-	public static const e_prismaticJoint:int = 2;
-	public static const e_distanceJoint:int = 3;
-	public static const e_pulleyJoint:int = 4;
-	public static const e_mouseJoint:int = 5;
-	public static const e_gearJoint:int = 6;
-	public static const e_lineJoint:int = 7;
-	public static const e_weldJoint:int = 8;
-	public static const e_frictionJoint:int = 9;
+	static b2internal const e_unknownJoint:int = 0;
+	static b2internal const e_revoluteJoint:int = 1;
+	static b2internal const e_prismaticJoint:int = 2;
+	static b2internal const e_distanceJoint:int = 3;
+	static b2internal const e_pulleyJoint:int = 4;
+	static b2internal const e_mouseJoint:int = 5;
+	static b2internal const e_gearJoint:int = 6;
+	static b2internal const e_lineJoint:int = 7;
+	static b2internal const e_weldJoint:int = 8;
+	static b2internal const e_frictionJoint:int = 9;
 
 	// enum b2LimitState
-	public static const e_inactiveLimit:int = 0;
-	public static const e_atLowerLimit:int = 1;
-	public static const e_atUpperLimit:int = 2;
-	public static const e_equalLimits:int = 3;
+	static b2internal const e_inactiveLimit:int = 0;
+	static b2internal const e_atLowerLimit:int = 1;
+	static b2internal const e_atUpperLimit:int = 2;
+	static b2internal const e_equalLimits:int = 3;
 	
 };
 

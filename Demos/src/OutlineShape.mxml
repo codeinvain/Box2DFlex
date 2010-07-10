@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600" preinitialize="application1_preinitializeHandler(event)"  initialize="application1_initializeHandler(event)" xmlns:b2d="Box2D.flex.b2d.*" creationComplete="application1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import Box2D.utilities.ComplexShapeParser;
+			
+			import mx.events.FlexEvent;
+			import mx.logging.ILogger;
+			import mx.logging.Log;
+			import mx.logging.LogEventLevel;
+			
+			import net.sakri.flash.vector.ShapeFidality;
+			private var log:ILogger = Log.getLogger("codinvain");
+			protected function application1_preinitializeHandler(event:FlexEvent):void
+			{
+				var logTarget:FirebugTarget = new FirebugTarget();
+				            logTarget.level = LogEventLevel.ALL;
+				            logTarget.includeDate = true;
+				            logTarget.includeTime = true;
+				            logTarget.includeCategory = true;
+				            logTarget.includeLevel = true;
+				            Log.addTarget(logTarget);	
+			}
+			
+			protected function application1_initializeHandler(event:FlexEvent):void
+			{
+				
+			}
+			
+			
+			protected function application1_creationCompleteHandler(event:FlexEvent):void
+			{
+				//var parser:ComplexShapeParser = new ComplexShapeParser(btn,ShapeFidality.LOW,0);
+				//worldUIContainer.parseCompiseteVisualElement(btn,parser);
+				
+				worldUIContainer.parseCompiseteVisualElement(composite,new ComplexShapeParser(ShapeFidality.LOW,0));
+				worldUIContainer.initPhysicsEngine();
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<b2d:SkinnablePhysicsContainer  width="800" height="600" setBoundries="true"  debugInFront="true" debug="true" id="worldUIContainer" autoStartPhysicsEngine="false"  yGravity="10">
+		<!--<s:Button label="rounded button" width="300" height="300" cornerRadius="50" id="btn" x="100" y="100"/>-->
+		<s:Graphic x="100" id="composite" >
+			<s:Ellipse width="73" height="66"  x="13" y="1">
+				<s:fill>
+					<s:SolidColor color="#ff00ff" alpha="1"/>
+				</s:fill>
+			</s:Ellipse>
+			<s:Rect width="9" height="50" rotation="45" x="36"  y="79">
+				<s:fill>
+					<s:SolidColor color="#ff0000" alpha="1"/>
+				</s:fill>
+			</s:Rect>
+			<s:Rect width="9" height="50" rotation="135" x="97"  y="115">
+				<s:fill>
+					<s:SolidColor color="#ff0000" alpha="1"/>
+				</s:fill>
+			</s:Rect>
+			<s:Rect width="20" height="102" rotation="0" x="38"  y="64">
+				<s:fill>
+					<s:SolidColor color="#0000ff" alpha="1"/>
+				</s:fill>
+			</s:Rect>
+			
+			
+			
+			<s:Ellipse width="13" height="12"  x="29" y="15">
+				<s:fill>
+					<s:SolidColor color="#000000" alpha="1"/>
+				</s:fill>
+			</s:Ellipse>
+			<s:Ellipse width="13" height="12"  x="59" y="15">
+				<s:fill>
+					<s:SolidColor color="#000000" alpha="1"/>
+				</s:fill>
+			</s:Ellipse>
+			<s:Rect width="30" height="20" rotation="0" x="9" y="156" >
+				<s:fill>
+					<s:SolidColor color="#000000" alpha="1"/>
+				</s:fill>
+			</s:Rect>
+			<s:Rect width="30" height="20" rotation="0" x="57" y="156" >
+				<s:fill>
+					<s:SolidColor color="#000000" alpha="1"/>
+				</s:fill>
+			</s:Rect>
+			
+		</s:Graphic>
+	</b2d:SkinnablePhysicsContainer>
+	
+	
+	
+	<s:SkinnableContainer id="holder">
+	</s:SkinnableContainer>
+	<s:SkinnableContainer id="optimized_shape" x="300" visible="false">
+		
+	</s:SkinnableContainer>
+	<mx:Image id="outline_image" x="600"  visible="false" />
+</s:Application>
