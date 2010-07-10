@@ -93,7 +93,11 @@ package Box2D.flex.b2d
 			super.createChildren();
 			initializeWorld();
 			setupDebug();
-			
+		}
+		
+		override public function createDeferredContent():void
+		{
+			super.createDeferredContent();
 		}
 
 		private function onUIComponentResize(event:ResizeEvent):void

@@ -5,7 +5,6 @@
 	<fx:Script>
 		<![CDATA[
 			import Box2D.utilities.ComplexShapeParser;
-			
 			import mx.events.FlexEvent;
 			import mx.logging.ILogger;
 			import mx.logging.Log;

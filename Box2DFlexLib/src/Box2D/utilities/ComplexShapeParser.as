@@ -61,7 +61,7 @@ package Box2D.utilities
 //			var bmd:BitmapData=new BitmapData(rect.width,rect.height,true,0x00);
 //			bmd.draw(element,null,ct,null,rect);
 //			return bmd;
-//			the other alternative is using elelment.width & height 			
+//			the other alternative is using elelment.width & height 	
 			var ct:ColorTransform = new ColorTransform(1,1,1,1,255,255,255,alphaLevel);
 			var bmd:BitmapData=new BitmapData(element.width,element.height,true,0x00);
 			bmd.draw(element,null,ct);

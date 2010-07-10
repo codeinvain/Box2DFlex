@@ -4,19 +4,11 @@
 			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600" xmlns:b2d="Box2D.flex.b2d.*" preinitialize="application1_initializeHandler(event)" backgroundColor="0xffffff" initialize="asdf(event)"> 
 	<fx:Script>
 		<![CDATA[
-			import Box2D.Collision.Shapes.b2CircleShape;
-			import Box2D.Collision.Shapes.b2Shape;
 			import Box2D.Dynamics.b2FixtureDef;
-			import Box2D.utilities.ComponenetToBodyMap;
-			import Box2D.utilities.WorldDefinition;
-			
-			import flash.sampler.NewObjectSample;
 			
 			import mx.events.FlexEvent;
 			import mx.logging.Log;
 			import mx.logging.LogEventLevel;
-			import mx.skins.Border;
-			import mx.skins.halo.ButtonSkin;
 
 			protected function application1_initializeHandler(event:FlexEvent):void
 			{
@@ -67,7 +59,7 @@
 					<s:SolidColor color="#ff00ff" alpha="1"/>
 				</s:fill>
 			</s:Ellipse>-->
-			<s:Rect width="30" height="30" rotation="30" >
+			<s:Rect width="30" height="30" rotation="30"  x="20" y="0">
 				<s:fill>
 					<s:SolidColor color="#ffff00" alpha="1"/>
 				</s:fill>

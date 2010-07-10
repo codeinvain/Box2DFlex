@@ -2,30 +2,26 @@
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600" backgroundColor="0x1a1a1a" 
-			   xmlns:local="*" initialize="application1_initializeHandler(event)" 
+			   xmlns:local="*" initialize="application1_initializeHandler(event)" creationComplete="application1_creationCompleteHandler(event)"
 			   preinitialize="application1_preinitializeHandler(event)"  mouseUp="application1_mouseUpHandler(event)" xmlns:b2d="Box2D.flex.b2d.*">
 	<fx:Script>
 		<![CDATA[
 			import Box2D.Common.Math.b2Vec2;
 			import Box2D.Dynamics.b2Body;
-			import Box2D.Dynamics.b2BodyDef;
 			import Box2D.Dynamics.b2ContactEvent;
 			import Box2D.Dynamics.b2FixtureDef;
 			import Box2D.Dynamics.b2World;
+			import Box2D.utilities.ComplexShapeParser;
 			import Box2D.utilities.ComponenetToBodyMap;
-			import Box2D.utilities.WorldClock;
 			
-			import mx.charts.HitData;
-			import mx.controls.Alert;
 			import mx.core.SoundAsset;
 			import mx.core.UIComponent;
-			import mx.events.DragEvent;
 			import mx.events.FlexEvent;
-			import mx.events.FlexMouseEvent;
 			import mx.logging.ILogger;
 			import mx.logging.Log;
 			import mx.logging.LogEventLevel;
-			import mx.rpc.soap.LoadEvent;
+			
+			import net.sakri.flash.vector.ShapeFidality;
 			
 			import spark.effects.animation.RepeatBehavior;
 			import spark.layouts.BasicLayout;
@@ -47,12 +43,7 @@
 			{
 				setupSound();
 				setupWorldPhysics();
-				throwBall();	
-				applyGlowFilter();
 				
-				randDirTimer = new Timer(1000,0);
-				randDirTimer.addEventListener(TimerEvent.TIMER,onRandomTimerTick);
-				randDirTimer.start();
 					
 			}
 
@@ -187,17 +178,16 @@
 
 			private function setupWorldPhysics():void
 			{
-				worldUIContainer.parseCompiseteVisualElement(ball);
+				
+				worldUIContainer.parseCompiseteVisualElement(ball,new ComplexShapeParser(ShapeFidality.LOW));
 				var p1FixD:b2FixtureDef = new b2FixtureDef();
 				p1FixD.friction=0;
 				p1FixD.density=0;
-				//p1FixD.restitution =1; 
 				var staticBody:ComponenetToBodyMap = new ComponenetToBodyMap(null,p1FixD,ComponenetToBodyMap.KINEMATIC_BODY);
 				worldUIContainer.map(p1,staticBody);
 				worldUIContainer.map(p2,staticBody);
 				worldUIContainer.map(p1Goal,staticBody);
 				worldUIContainer.map(p2Goal,staticBody);
-				worldUIContainer.initPhysicsEngine();
 				worldUIContainer.world.addEventListener(b2World.BEGINCONTACT,onBodiesContact);
 				worldUIContainer.world.addEventListener(b2World.POSTSTEP,onPostStep);
 			}
@@ -207,6 +197,16 @@
 			{
 				var bBody:b2Body = worldUIContainer.getComponentBody(ball);
 				bBody.ApplyForce(new b2Vec2(-400,100),bBody.GetDefinition().position);
+			}
+
+
+			protected function application1_creationCompleteHandler(event:FlexEvent):void
+			{
+				throwBall();	
+				applyGlowFilter();
+				randDirTimer = new Timer(1000,0);
+				randDirTimer.addEventListener(TimerEvent.TIMER,onRandomTimerTick);
+				randDirTimer.start();
 			}
 
 		]]>
@@ -227,7 +227,7 @@
 	 </s:layout>
 	<s:BorderContainer verticalCenter="0" horizontalCenter="0" borderColor="0x99ffcc" width="800" height="400" borderWeight="3"  backgroundColor="0x1a1a1a" cornerRadius="8" id="border" mouseMove="world_mouseMoveHandler(event)" >
 		
-		<b2d:SkinnablePhysicsContainer  width="794" height="394" setBoundries="true"  debugInFront="true" debug="false" id="worldUIContainer" autoStartPhysicsEngine="false"  >
+		<b2d:SkinnablePhysicsContainer  width="794" height="394" setBoundries="true"  debugInFront="true" debug="false" id="worldUIContainer" autoStartPhysicsEngine="true"  >
 			
 			<s:BorderContainer id="p1" borderColor="0x99ffcc" width="30" height="80" borderWeight="3"  backgroundColor="0x99ffcc" cornerRadius="3" x="30" y="210"  />	
 			<s:BorderContainer id="p2" borderColor="0x99ffcc" width="30" height="80" borderWeight="3"  backgroundColor="0x99ffcc" cornerRadius="3" x="740" y="210"  mouseDown="p2_mouseDownHandler(event)" mouseUp="p2_mouseUpHandler(event)"  />

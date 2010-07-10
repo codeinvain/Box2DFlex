@@ -39,7 +39,6 @@
 			<s:VerticalLayout paddingLeft="5" paddingRight="5" 
 							  paddingTop="5" paddingBottom="5"/>
 		</s:layout>
-		
 		<s:Label text="xGravity"/>
 		<s:HSlider id="xGravitySlider" minimum="-10" maximum="10" value="0" width="170"/>
 		<s:Label text="yGravity"/>
